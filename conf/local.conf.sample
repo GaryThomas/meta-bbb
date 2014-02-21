@@ -255,3 +255,11 @@ CONF_VERSION = "1"
 
 # For BeagleBone (anything that uses device tree?)
 IMAGE_INSTALL_append = " kernel-image kernel-devicetree kernel-modules"
+
+# Maintain local source mirror
+BB_GENERATE_MIRROR_TARBALLS ?= "1"
+SOURCE_MIRROR_URL ?= "file:///work/misc/Poky/sources/"
+INHERIT += "own-mirrors"
+
+# Enable local PR server - edit this to use a shared server
+PRSERV_HOST = "localhost:0"
