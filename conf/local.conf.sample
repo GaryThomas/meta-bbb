@@ -126,8 +126,7 @@ DISTRO ?= "poky"
 #  - 'package_rpm' for rpm style packages
 # E.g.: PACKAGE_CLASSES ?= "package_rpm package_deb package_ipk"
 # We default to rpm:
-#PACKAGE_CLASSES ?= "package_rpm"
-PACKAGE_CLASSES ?= "package_ipk"
+PACKAGE_CLASSES ?= "package_rpm"
 
 #
 # SDK/ADT target architecture
@@ -253,13 +252,20 @@ ASSUME_PROVIDED += "libsdl-native"
 # this doesn't mean anything to you.
 CONF_VERSION = "1"
 
-# For BeagleBone (anything that uses device tree?)
-IMAGE_INSTALL_append = " kernel-image kernel-devicetree kernel-modules"
+#----------------------- Local adaptations -----------------------------------------
 
-# Maintain local source mirror
+# Maintain local source mirror.  Set SOURCE_MIRROR_URL to shared source tree
 BB_GENERATE_MIRROR_TARBALLS ?= "1"
 SOURCE_MIRROR_URL ?= "file:///work/misc/Poky/sources/"
 INHERIT += "own-mirrors"
 
 # Enable local PR server - edit this to use a shared server
 PRSERV_HOST = "localhost:0"
+
+# Override packaging selection (opkg/ipk is easier to manage)
+PACKAGE_CLASSES = "package_ipk"
+
+# Export packages
+FEEDNAMEPREFIX = "yocto_bbb"
+FEEDURIPREFIX  = "http://my.local.com/${MACHINE}-feeds"
+
