@@ -1,5 +1,7 @@
+=========== Setting up the Poky/Yocto source trees (meta-data, sources, etc) ===============
+
 Place the Yocto meta-data like this:
-  YOCTO:
+  ${YOCTO}:
     meta
     meta-yocto
     meta-yocto-bsp
@@ -9,8 +11,115 @@ At the same level, add the layers for the BBB
     meta-bbb
 
 These commands will create this structure, using the latest master/tip
-of each of the appropriate trees:
-  % git clone git://git.pokylinux.org/poky.git YOCTO
-  % cd YOCTO
+of each of the appropriate trees.  Choose some top level location for
+your Poky/Yocto tree, e.g. ${YOCTO}  (fill in your chosen path)
+
+  % git clone git://git.pokylinux.org/poky.git ${YOCTO}
+  % cd ${YOCTO}
   % git clone https://github.com/koenkooi/meta-beagleboard.git meta-beagleboard
   % git clone https://github.com/GaryThomas/meta-bbb.git
+
+By default, the layer is set up to use a local source mirror (which can save a
+ton of downloading time!).  The simplest way to do this is to add a symbolic
+link at the top of the ${YOCTO} tree.  For my setup, I use this:
+  % ln -sf /work/misc/Poky/sources ${YOCTO}/sources
+My '/work/misc/Poky/sources' is on a shared NFS drive available on all my
+systems under the same path.
+
+========== Building using Poky/Yocto
+
+With Poky/Yocto, you build in a separate location from the sources (typically
+and IMO, recommended).  There is a single command (thanks to the meta-bbb layer)
+that can set this up for you.  Choose where you want to build as ${BUILD}.  Note
+that the first/master build will need a lot of disk space (upwards of 50GB).
+
+  % TEMPLATECONF=meta-bbb/conf . ${YOCTO}/oe-init-build-env ${BUILD}
+
+This will create the directory ${BUILD} and populate it with Poky/Yocto control
+files.  It will also update the shell environment to be ready to build.
+
+Now, to build an image, e.g. 'core-image-sato' which is a reasonably complete
+"desktop" style image for the BBB, simply type:
+
+  % bitbake core-image-sato
+
+Sit back (or go have dinner) as this will take many hours (probably 4-5).
+
+When the build completes, the fruits (results) are placed in the tmp/deploy/images/
+directory of the build tree.  In this case, it may look something like this:
+
+  % ls -l tmp/deploy/images/beaglebone
+  total 232832
+  -rw-r--r-- 1 gthomas gthomas    15778 Apr 16 09:14 core-image-sato-beaglebone-20140416123319.rootfs.manifest
+  -rw-r--r-- 1 gthomas gthomas 66847733 Apr 16 09:15 core-image-sato-beaglebone-20140416123319.rootfs.tar.gz
+  -rw-r--r-- 1 gthomas gthomas 30699848 Apr 16 09:16 core-image-sato-beaglebone-20140416123319.rootfs.tar.xz
+  -rw-r--r-- 1 gthomas gthomas    15778 Apr 17 03:05 core-image-sato-beaglebone-20140417090242.rootfs.manifest
+  -rw-r--r-- 1 gthomas gthomas 66847820 Apr 17 03:06 core-image-sato-beaglebone-20140417090242.rootfs.tar.gz
+  -rw-r--r-- 1 gthomas gthomas 30702604 Apr 17 03:07 core-image-sato-beaglebone-20140417090242.rootfs.tar.xz
+  lrwxrwxrwx 1 gthomas gthomas       57 Apr 17 03:07 core-image-sato-beaglebone.manifest -> core-image-sato-beaglebone-20140417090242.rootfs.manifest
+  lrwxrwxrwx 1 gthomas gthomas       55 Apr 17 03:07 core-image-sato-beaglebone.tar.gz -> core-image-sato-beaglebone-20140417090242.rootfs.tar.gz
+  lrwxrwxrwx 1 gthomas gthomas       55 Apr 17 03:07 core-image-sato-beaglebone.tar.xz -> core-image-sato-beaglebone-20140417090242.rootfs.tar.xz
+  lrwxrwxrwx 1 gthomas gthomas       22 Apr 16 09:08 MLO -> MLO-beaglebone-2014.01
+  lrwxrwxrwx 1 gthomas gthomas       22 Apr 16 09:08 MLO-beaglebone -> MLO-beaglebone-2014.01
+  -rwxr-xr-x 2 gthomas gthomas   105396 Apr 16 09:08 MLO-beaglebone-2014.01
+  -rw-rw-r-- 2 gthomas gthomas 38046187 Apr 16 09:05 modules--3.8.13-r23z.2-beaglebone-20140416123319.tgz
+  lrwxrwxrwx 1 gthomas gthomas       52 Apr 16 09:05 modules-beaglebone.tgz -> modules--3.8.13-r23z.2-beaglebone-20140416123319.tgz
+  -rw-rw-r-- 2 gthomas gthomas      294 Apr 17 03:04 README_-_DO_NOT_DELETE_FILES_IN_THIS_DIRECTORY.txt
+  -rwxr-xr-x 2 gthomas gthomas   383140 Apr 16 09:08 u-boot-beaglebone-2014.01-r0.img
+  lrwxrwxrwx 1 gthomas gthomas       32 Apr 16 09:08 u-boot-beaglebone.img -> u-boot-beaglebone-2014.01-r0.img
+  lrwxrwxrwx 1 gthomas gthomas       32 Apr 16 09:08 u-boot.img -> u-boot-beaglebone-2014.01-r0.img
+  lrwxrwxrwx 1 gthomas gthomas       51 Apr 16 09:05 zImage -> zImage--3.8.13-r23z.2-beaglebone-20140416123319.bin
+  -rw-r--r-- 2 gthomas gthomas  4727384 Apr 16 09:04 zImage--3.8.13-r23z.2-beaglebone-20140416123319.bin
+  lrwxrwxrwx 1 gthomas gthomas       51 Apr 16 09:05 zImage-beaglebone.bin -> zImage--3.8.13-r23z.2-beaglebone-20140416123319.bin
+
+Notice that there are multiple 'core-image-sato*' files/images.  This is because I've built
+the image a few times, with some changes.  The most recent versions are always accessible
+via the symbolic links.
+
+========== Deploying to the board
+
+To run these images, place them on an SD card.  Scripts have been provided for
+this to make it simpler, assuming you have an SD slot or USB/SD adapter on your
+computer.  I often build on remote systems and move the results to my local
+machine where the SD adapter is located using a command like this:
+
+  % rsync -auvL tmp/deploy/images/beaglebone/core-image-sato-beaglebone.tar.gz \
+                tmp/deploy/images/beaglebone/u-boot-beaglebone.img \
+                tmp/deploy/images/beaglebone/MLO-beaglebone \
+                /work/tmp/bbb_2014-04-10
+
+These are the images/files that you will need to create the SD card image:
+  core-image-sato-beaglebone.tar.gz - this contains the root file system
+  u-boot-beaglebone.img - this file is what boots Linux from the SD card
+  MLO-beaglebone - this is stage 1 of the bootstrap
+
+To create the SD card from these images, use this command sequence:
+
+  % export PATH=${YOCTO}/meta-bbb/scripts:$PATH
+  % cd /work/tmp/bbb_2014-04-10
+  % sudo make_sd /dev/sdX none core-image-sato-beaglebone.tar.gz MLO=MLO-beaglebone UBOOT_IMG=u-boot-beaglebone.img
+
+The script will prompt you before it does anything destructive.  You must type
+'yes' (not just 'y') for it to proceed.
+
+In a few minutes, you'll have a ready to boot SD card.
+
+You should be ready to access the BeagleBone* board using it's serial/debug interface.
+For the BeagleBoneBlack, this requires an optional USB cable.
+
+It's also easiest to always boot from the SD card.  The BBB has an eMMC device which
+can be used, but at the beginning, stick with an external SD card.
+
+To make the BBB always use the SD card, type these commands into the serial/debug port:
+
+  U-Boot> mmc dev 1
+  U-Boot> mmc erase 0 512
+
+Now, insert the SD card and press RESET.  The board should boot into Linux.
+
+========= Using sstate for quicker/shared builds
+  T.B.D.
+
+========= Updating the downloaded sources
+  T.B.D.
+
