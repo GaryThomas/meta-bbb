@@ -38,6 +38,10 @@ that the first/master build will need a lot of disk space (upwards of 50GB).
 This will create the directory ${BUILD} and populate it with Poky/Yocto control
 files.  It will also update the shell environment to be ready to build.
 
+********* CAUTION!  Do not try to put ${BUILD} on an NFS shared volume.  This
+*********           is know to cause major problems!  You can have ${YOCTO}
+*********           and/or ${YOCTO}/sources on NFS, but not ${BUILD}
+
 Now, to build an image, e.g. 'core-image-sato' which is a reasonably complete
 "desktop" style image for the BBB, simply type:
 
