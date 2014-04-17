@@ -1,0 +1,16 @@
+Place the Yocto meta-data like this:
+  YOCTO:
+    meta
+    meta-yocto
+    meta-yocto-bsp
+    ...
+At the same level, add the layers for the BBB
+    meta-beaglebone
+    meta-bbb
+
+These commands will create this structure, using the latest master/tip
+of each of the appropriate trees:
+  % git clone git://git.pokylinux.org/poky.git YOCTO
+  % cd YOCTO
+  % git clone https://github.com/koenkooi/meta-beagleboard.git meta-beagleboard
+  % git clone https://github.com/GaryThomas/meta-bbb.git

@@ -1,0 +1,5 @@
+This repository holds a meta layer for Yocto which makes it simple
+to build images for the BeagleBone* boards.  Check NOTES for how
+to use it.
+
+For more info, or help using this layer, contact gary@mlbassoc.com
