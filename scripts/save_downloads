@@ -1,0 +1,8 @@
+#! /bin/bash
+
+# Upload tarballs, etc, from a Poky/Yocto build tree to the common source tree
+
+cd downloads
+mkdir -p /tmp/downloads
+find . -maxdepth 1 -type f | grep -v '.lock$' | grep -v '.done$' >/tmp/files.$$
+rsync -auv --files-from=/tmp/files.$$ . /work/misc/Poky/sources
