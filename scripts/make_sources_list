@@ -1,0 +1,13 @@
+#! /bin/bash
+
+#
+# Extract the file names from "downloads/" for a customer release
+# Run this in a build tree, either where full images have been built
+# built, or just the sources have been updated via:
+#
+
+for i in $*; do
+  cd $i
+  find downloads -maxdepth 1 -type f -or -type l 
+done | grep -v .done | sort | uniq | sed -e 's;downloads/;;'
+

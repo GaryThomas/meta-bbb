@@ -125,5 +125,36 @@ Now, insert the SD card and press RESET.  The board should boot into Linux.
   T.B.D.
 
 ========= Updating the downloaded sources
-  T.B.D.
 
+The build process using bitbake is designed to download source packages in
+order to accomplish the building of the various recipes.  These source packages
+can come from a local source mirror (that's how conf/local.conf will be set up)
+or if not present locally, from the appropriate web URL.  If bitbake has to actually
+download new sources, they will be placed in ${BUILD}/downloads.  The best thing to
+do once a build has completed is to push any freshly downloaded files to the shared
+source mirror.  Assuming that this mirror is at ${YOCTO}/downloads (it can be an
+actual directory or symlink to a shared/NFS tree), use this script:
+
+  % export PATH=${YOCTO}/meta-bbb/scripts:$PATH
+  % save_downloads
+
+Now the next build, the sources will come from the local mirror and not the net.
+Note that this can have a substantial savings in both time and network bandwidth.
+GIT based repositories (used by many recipes) can be especially large and take
+quite a long time to download.  In the case of SCM repositories, a tar archive 
+will be made in downloads that represents the whole thing which can be placed
+on the local mirror.
+
+Using the local mirror can totally eliminate the need for network access once
+fully populated.  It's also great for making snapshots of the Poky/Yocto build
+environment as a copy of the ${YOCTO} meta-data plus [possibly a subset of] the
+source mirror is all you need to be able to completely recreate builds from a
+given time/date.  You can use the script 'scripts/make_sources_list' to extract
+the files needed from a given build.
+
+  % export PATH=${YOCTO}/meta-bbb/scripts:$PATH
+  % bitbake some-image -c fetchall
+  % save_downloads
+  % make_sources_list >/tmp/needed_packages
+  % tar -cf /tmp/packages.tar -C ${YOCTO}/sources -T /tmp/needed_packages
+  % tar -cjf /tmp/yocto.tar.bz2 -C ${YOCTO} --exclude=sources/ .
