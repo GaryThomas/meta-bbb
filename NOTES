@@ -124,6 +124,46 @@ Now, insert the SD card and press RESET.  The board should boot into Linux.
 ========= Using sstate for quicker/shared builds
   T.B.D.
 
+========= Using opkg to manage packages on the target
+
+The various packages built from the Yocto recipes can be installed, removed, updated,
+etc. on the target, much like you would use YUM (on Fedora) or DPKG/APT-GET (on Debian)
+For this to work, the package set(s) need to be exported, normally using HTTP.  For
+this task, a simple web server will do, but you can choose any one you are comfortable
+with.  The packages are kept in the ${BUILD}/tmp/deploy/ipk tree.  This will have a
+number of subtrees, covering all, architecture and target specific packages.  Export
+the top of this tree, e.g. when using lighttpd
+  # ln -sf ${BUILD}/tmp/deploy/ipk /var/www/${TARGET}-feeds
+The symbolic name is important as that's where opkg will be looking for the files
+on the HTTP server.  These settings are in ${BUILD}/conf/local.conf
+  FEEDURIPREFIX  = "http://my.local.com/${MACHINE}-feeds"
+In this case, the HTTP server is 'my.local.com' and the packages are at ${MACHINE}-feeds
+
+Once the HTTP server is set up, and whenever any packages on the build host are updated,
+you'll need to rebuild the package databases.  This is very important as without it, the
+"feeds" will be stale and not work properly.
+  % bitbake package-index
+The package databases are kept in the same tree(s), so nothing more need to be done.
+
+On the target, edit the file '/etc/opkg/base_files.conf' to reflect the location of
+the packages and the HTTP server.  Of course, if these are correct in local.conf, they
+will already be correct on the target.
+
+Before doing any operations on the target, the local copy of the package databases
+(meta-data) needs to be up to date.
+  # opkg update
+
+To install a new program, or update an already installed package:
+  # opkg install <package>
+e.g.
+  # opkg install i2c-tools
+
+If a number of packages have been updated and you want to reinstall them all:
+  # opkg upgrade
+
+Of course, opkg manages package dependencies and will download/install any necessary
+packages.
+
 ========= Updating the downloaded sources
 
 The build process using bitbake is designed to download source packages in
