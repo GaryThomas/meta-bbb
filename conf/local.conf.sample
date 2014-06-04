@@ -269,3 +269,6 @@ PACKAGE_CLASSES = "package_ipk"
 FEEDNAMEPREFIX = "yocto_bbb"
 FEEDURIPREFIX  = "http://my.local.com/${MACHINE}-feeds"
 
+# All images need kernel + device tree files
+IMAGE_INSTALL_append = " kernel-base"
+
