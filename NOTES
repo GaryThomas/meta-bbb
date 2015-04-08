@@ -7,7 +7,7 @@ Place the Yocto meta-data like this:
     meta-yocto-bsp
     ...
 At the same level, add the layers for the BBB
-    meta-beaglebone
+    meta-ti
     meta-bbb
 
 These commands will create this structure, using the latest master/tip
@@ -16,7 +16,7 @@ your Poky/Yocto tree, e.g. ${YOCTO}  (fill in your chosen path)
 
   % git clone git://git.pokylinux.org/poky.git ${YOCTO}
   % cd ${YOCTO}
-  % git clone https://github.com/koenkooi/meta-beagleboard.git meta-beagleboard
+  % git clone git://git.yoctoproject.org/meta-ti
   % git clone https://github.com/GaryThomas/meta-bbb.git
 
 By default, the layer is set up to use a local source mirror (which can save a
