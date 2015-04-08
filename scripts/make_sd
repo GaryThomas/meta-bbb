@@ -14,7 +14,7 @@ for i in $*; do
 done
 
 if [ $# -lt 3 ]; then
-  echo "usage: make_sd <dev> <uImage> <rootfs> [MLO=mlo] [UBOOT=uboot] [UBOOT_IMG=uboot.img]"
+  echo "usage: make_sd <dev> <uImage> <rootfs> [MLO=mlo] [UBOOT=uboot] [UBOOT_IMG=uboot.img] [IMAGE_NAME=uImage]"
   exit 1
 fi
 
@@ -25,6 +25,7 @@ MLO=${MLO:-""}
 UBOOT=${UBOOT:-""}
 UBOOT_IMG=${UBOOT_IMG:-""}
 UENV=${UENV:=""}
+IMAGE_NAME=${IMAGE_NAME:="zImage"}
 
 MDEV=`basename ${DEV}`
 if ! fgrep -q ${MDEV} /proc/partitions; then
@@ -88,8 +89,8 @@ if [ "${OK}" == "yes" ]; then
   fi
   echo "Copy kernel"
   if [ "${UIMAGE}" != "none" ]; then
-    cp ${UIMAGE} /tmp/media/uImage
-    cp ${UIMAGE} /tmp/media/uImage.bin
+    cp ${UIMAGE} /tmp/media/${IMAGE_NAME}
+    cp ${UIMAGE} /tmp/media/${IMAGE_NAME}.bin
   fi
   sync
   umount /tmp/media
@@ -103,7 +104,7 @@ if [ "${OK}" == "yes" ]; then
   fi
   if [ "${UIMAGE}" != "none" ]; then
     mkdir -p /tmp/media/boot
-    cp ${UIMAGE} /tmp/media/boot/uImage
+    cp ${UIMAGE} /tmp/media/boot/${IMAGE_NAME}
     sync
   fi
   umount /tmp/media
