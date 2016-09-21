@@ -139,6 +139,14 @@ on the HTTP server.  These settings are in ${BUILD}/conf/local.conf
   FEEDURIPREFIX  = "http://my.local.com/${MACHINE}-feeds"
 In this case, the HTTP server is 'my.local.com' and the packages are at ${MACHINE}-feeds
 
+n.b. the file /etc/opkg/base-feeds.conf is not currently built by any Poky/Yocto recipe :-(
+It should look something like this:
+--------------------------------------------------------------------------------
+src/gz poky-all http://192.168.1.12/beaglebone-feeds/all
+src/gz poky-cortexa8hf-neon http://192.168.1.12/beaglebone-feeds/cortexa8hf-neon
+src/gz poky-beaglebone http://192.168.1.12/beaglebone-feeds/beaglebone
+--------------------------------------------------------------------------------
+
 Once the HTTP server is set up, and whenever any packages on the build host are updated,
 you'll need to rebuild the package databases.  This is very important as without it, the
 "feeds" will be stale and not work properly.
