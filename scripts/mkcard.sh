@@ -1,4 +1,5 @@
 #! /bin/sh
+# (C) 2016, MLB Associates
 # (c) 2009 Graeme Gregory
 # modified by Steve Sakoman
 # This script is GPLv3 licensed!
@@ -17,12 +18,13 @@ CYLINDERS=`echo $SIZE/255/63/512 | bc`
 umount ${DRIVE}1
 umount ${DRIVE}2
 
-echo CYLINDERS – $CYLINDERS
-
-{
-echo ,9,0x0C,*
-echo ,,,-
-} | sfdisk -D -H 255 -S 63 -C $CYLINDERS $DRIVE
+# Create partitions
+parted -s ${DRIVE} unit MIB -- mklabel msdos
+parted -s ${DRIVE} unit MIB -- mkpart primary fat32 4 128
+parted -s ${DRIVE} unit MIB -- set boot 1 on
+parted -s ${DRIVE} unit MiB -- mkpart primary ext2 132 -1s
+partprobe ${DRIVE}
+sfdisk -l ${DRIVE}
 
 umount ${DRIVE}1
 mkfs.vfat -F 32 -n boot ${DRIVE}1
