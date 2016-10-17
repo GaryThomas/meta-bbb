@@ -265,6 +265,9 @@ PRSERV_HOST = "localhost:0"
 # Override packaging selection (opkg/ipk is easier to manage)
 PACKAGE_CLASSES = "package_ipk"
 
+# Include opkg package manager
+IMAGE_FEATURES ?= "package-management debug-tweaks "
+
 # Export packages
 FEEDNAMEPREFIX = "yocto_bbb"
 FEEDURIPREFIX  = "http://my.local.com/${MACHINE}-feeds"

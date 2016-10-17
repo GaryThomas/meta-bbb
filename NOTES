@@ -143,7 +143,7 @@ n.b. the file /etc/opkg/base-feeds.conf is not currently built by any Poky/Yocto
 It should look something like this:
 --------------------------------------------------------------------------------
 src/gz poky-all http://192.168.1.12/beaglebone-feeds/all
-src/gz poky-cortexa8hf-neon http://192.168.1.12/beaglebone-feeds/cortexa8hf-neon
+src/gz poky-armv7ahf-neon http://192.168.1.12/beaglebone-feeds/armv7ahf-neon
 src/gz poky-beaglebone http://192.168.1.12/beaglebone-feeds/beaglebone
 --------------------------------------------------------------------------------
 
