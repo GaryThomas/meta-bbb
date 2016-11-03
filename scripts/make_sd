@@ -13,33 +13,46 @@ for i in $*; do
   fi
 done
 
-if [ $# -lt 3 ]; then
-  echo "usage: make_sd <dev> <uImage> <rootfs> [MLO=mlo] [UBOOT=uboot] [UBOOT_IMG=uboot.img] [IMAGE_NAME=uImage]"
+usage() {
+  echo "usage: make_sd DISK=<disk_dev> [KERNEL=<?Image>] [KERNEL_IMAGE_NAME=zImage] [DTB=<device-tree>] [DTB_IMAGE_NAME=zImage.dtb] [ROOTFS=<rootfs>] [MLO=mlo] [UBOOT=uboot] [UBOOT_IMAGE_NAME=u-boot.img]"
   exit 1
-fi
+}  
 
-DEV=$1
-UIMAGE=$2
-ROOTFS=$3
+DISK=${DISK:=none}
+KERNEL=${KERNEL:-zImage}
+KERNEL_IMAGE_NAME=${KERNEL_IMAGE_NAME:=zImage}
+DTB=${DTB:-none}
+DTB_IMAGE_NAME=${DTB_IMAGE_NAME:=`basename ${DTB} .dtb`.dtb}
+ROOTFS=${ROOTFS:=none}
 MLO=${MLO:-""}
 UBOOT=${UBOOT:-""}
-UBOOT_IMG=${UBOOT_IMG:-""}
+UBOOT_IMAGE_NAME=${UBOOT_IMAGE_NAME:-"u-boot.img"}
 UENV=${UENV:=""}
-IMAGE_NAME=${IMAGE_NAME:="zImage"}
 
-MDEV=`basename ${DEV}`
+# Check for required arguments
+if [ ${DISK} == "none" -o ${ROOTFS} == "none" ]; then
+    usage
+fi
+
+MDEV=`basename ${DISK}`
 if ! fgrep -q ${MDEV} /proc/partitions; then
-  echo "*** Are you sure?  ${DEV} is not in partition list"
+  echo "*** Are you sure?  ${DISK} is not in partition list"
   exit 1
 fi
 
 echo "========================================"
 echo ""
 echo "About to create SD:"
-echo "  SD device = ${DEV}"
-if [ "${UIMAGE}" != "none" ]; then
-  UIMAGE=`readlink -e ${UIMAGE}`
-  echo "  uImage file = ${UIMAGE}"
+echo "  SD device = ${DISK}"
+if [ "${KERNEL}" != "none" ]; then
+  KERNEL=`readlink -e ${KERNEL}`
+  echo "  Kernel ?Image file = ${KERNEL}"
+  echo "                       ... installed as ${KERNEL_IMAGE_NAME}"
+fi
+if [ "${DTB}" != "none" ]; then
+  DTB=`readlink -e ${DTB}`
+  echo "  Device tree file = ${DTB}"
+  echo "                     ... installed as ${DTB_IMAGE_NAME}"
 fi
 ROOTFS=`readlink -e ${ROOTFS}`
 echo "  root file system = ${ROOTFS}"
@@ -50,10 +63,7 @@ fi
 if [ "x$UBOOT" != "x" ]; then
   UBOOT=`readlink -e $UBOOT`
   echo "  UBOOT = ${UBOOT}"
-fi
-if [ "x$UBOOT_IMG" != "x" ]; then
-  UBOOT_IMG=`readlink -e $UBOOT_IMG`
-  echo "  UBOOT_IMG = ${UBOOT_IMG}"
+  echo "          ... installed as ${UBOOT_IMAGE_NAME}"
 fi
 if [ "x$UENV" != "x" ]; then
   UENV=`readlink -e $UENV`
@@ -67,44 +77,46 @@ read -p "Continue? " OK
 if [ "${OK}" == "yes" ]; then
   echo "****************************************"
   echo "Format SD card"
-  mkcard.sh ${DEV} >/tmp/mkcard.log 2>&1
+  mkcard.sh ${DISK} >/tmp/mkcard.log 2>&1
   echo "****************************************"
   mkdir -p /tmp/media
-  mount ${DEV}1 /tmp/media
+  mount ${DISK}1 /tmp/media
   if [ "x$MLO" != "x" ]; then
     echo "Install MLO"
     cp ${MLO} /tmp/media/MLO
   fi
   if [ "x$UBOOT" != "x" ]; then
     echo "Install U-Boot"
-    cp ${UBOOT} /tmp/media/u-boot.bin
-  fi
-  if [ "x$UBOOT_IMG" != "x" ]; then
-    echo "Install U-Boot [img]"
-    cp ${UBOOT_IMG} /tmp/media/u-boot.img
+    cp ${UBOOT} /tmp/media/${UBOOT_IMAGE_NAME}
   fi
   if [ "x$UENV" != "x" ]; then
     echo "Install U-Boot environment"
     cp ${UENV} /tmp/media/uEnv.txt
   fi
-  echo "Copy kernel"
-  if [ "${UIMAGE}" != "none" ]; then
-    cp ${UIMAGE} /tmp/media/${IMAGE_NAME}
-    cp ${UIMAGE} /tmp/media/${IMAGE_NAME}.bin
+  if [ "${KERNEL}" != "none" ]; then
+    echo "Copy kernel"
+    cp ${KERNEL} /tmp/media/${KERNEL_IMAGE_NAME}
+  fi
+  if [ "${DTB}" != "none" ]; then
+    echo "Copy device tree"
+    cp ${DTB} /tmp/media/${DTB_IMAGE_NAME}
   fi
   sync
   umount /tmp/media
   echo "****************************************"
   echo "Install root file system"
-  mount ${DEV}2 /tmp/media
+  mount ${DISK}2 /tmp/media
   if `echo ${ROOTFS} | fgrep -q bz2`; then
     tar -jxpf ${ROOTFS} -C /tmp/media
   else
     tar -zxpf ${ROOTFS} -C /tmp/media
   fi
-  if [ "${UIMAGE}" != "none" ]; then
+  if [ "${KERNEL}" != "none" ]; then
     mkdir -p /tmp/media/boot
-    cp ${UIMAGE} /tmp/media/boot/${IMAGE_NAME}
+    # cp ${KERNEL} /tmp/media/boot/${KERNEL_IMAGE_NAME}
+    if [ "${DTB}" != "none" ]; then
+      cp ${DTB} /tmp/media/boot/${DTB_IMAGE_NAME}
+    fi
     sync
   fi
   umount /tmp/media
