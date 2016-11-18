@@ -145,6 +145,7 @@ It should look something like this:
 src/gz poky-all http://192.168.1.12/beaglebone-feeds/all
 src/gz poky-armv7ahf-neon http://192.168.1.12/beaglebone-feeds/armv7ahf-neon
 src/gz poky-beaglebone http://192.168.1.12/beaglebone-feeds/beaglebone
+src/gz poky-armv7at2hf-neon http://192.168.1.12/beaglebone-feeds/armv7at2hf-neon
 --------------------------------------------------------------------------------
 
 Once the HTTP server is set up, and whenever any packages on the build host are updated,
