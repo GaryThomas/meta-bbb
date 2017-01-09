@@ -18,6 +18,7 @@ your Poky/Yocto tree, e.g. ${YOCTO}  (fill in your chosen path)
   % cd ${YOCTO}
   % git clone git://git.yoctoproject.org/meta-ti
   % git clone https://github.com/GaryThomas/meta-bbb.git
+  % cd meta-bbb;git checkout origin/using-meta-ti
 
 By default, the layer is set up to use a local source mirror (which can save a
 ton of downloading time!).  The simplest way to do this is to add a symbolic
