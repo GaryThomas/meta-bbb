@@ -7,8 +7,13 @@ DRIVE=$1
 umount ${DRIVE}1 >/dev/null 2>&1
 umount ${DRIVE}2 >/dev/null 2>&1
 
-# Erase old label
 dd if=/dev/zero of=${DRIVE} bs=1024 count=8
+
+#SIZE=`fdisk -l $DRIVE | grep Disk | awk '{print $5}'`
+
+#echo DISK SIZE – $SIZE bytes
+
+#CYLINDERS=`echo $SIZE/255/63/512 | bc`
 
 # Create partitions
 parted -s ${DRIVE} unit MIB -- mklabel msdos
@@ -22,4 +27,4 @@ umount ${DRIVE}1 >/dev/null 2>&1
 mkfs.vfat -F 32 -n boot ${DRIVE}1
 
 umount ${DRIVE}2 >/dev/null 2>&1
-mke2fs -j -F -L rootfs ${DRIVE}2
+mke2fs -j -F -L rootfs ${DRIVE}2 

@@ -14,7 +14,7 @@ for i in $*; do
 done
 
 usage() {
-  echo "usage: make_sd DISK=<disk_dev> [KERNEL=<?Image>] [KERNEL_IMAGE_NAME=zImage] [DTB=<device-tree>] [DTB_IMAGE_NAME=zImage.dtb] [ROOTFS=<rootfs>] [MLO=mlo] [UBOOT=uboot] [UBOOT_IMAGE_NAME=u-boot.img]"
+  echo "usage: make_sd DISK=<disk_dev> [KERNEL=<?Image>] [KERNEL_IMAGE_NAME=zImage] [DTB=<device-tree>] [DTB_IMAGE_NAME=zImage.dtb] [ROOTFS=<rootfs>] [BOOTFS=<bootfs>] [MLO=mlo] [UBOOT=uboot] [UBOOT_IMAGE_NAME=u-boot.img]"
   exit 1
 }  
 
@@ -23,6 +23,7 @@ KERNEL=${KERNEL:-zImage}
 KERNEL_IMAGE_NAME=${KERNEL_IMAGE_NAME:=zImage}
 DTB=${DTB:-none}
 DTB_IMAGE_NAME=${DTB_IMAGE_NAME:=`basename ${DTB} .dtb`.dtb}
+BOOTFS=${BOOTFS:=none}
 ROOTFS=${ROOTFS:=none}
 MLO=${MLO:-""}
 UBOOT=${UBOOT:-""}
@@ -54,8 +55,14 @@ if [ "${DTB}" != "none" ]; then
   echo "  Device tree file = ${DTB}"
   echo "                     ... installed as ${DTB_IMAGE_NAME}"
 fi
-ROOTFS=`readlink -e ${ROOTFS}`
-echo "  root file system = ${ROOTFS}"
+if [ "${ROOTFS}" != "none" ]; then
+    ROOTFS=`readlink -e ${ROOTFS}`
+    echo "  root file system = ${ROOTFS}"
+fi
+if [ "${BOOTFS}" != "none" ]; then
+    BOOTFS=`readlink -e ${BOOTFS}`
+    echo "  boot file system = ${BOOTFS}"
+fi
 if [ "x$MLO" != "x" ]; then
   MLO=`readlink -e $MLO`
   echo "  MLO = ${MLO}"
@@ -101,15 +108,24 @@ if [ "${OK}" == "yes" ]; then
     echo "Copy device tree"
     cp ${DTB} /tmp/media/${DTB_IMAGE_NAME}
   fi
+  if [ "${BOOTFS}" != "none" ]; then
+      if `echo ${BOOTFS} | fgrep -q bz2`; then
+	  tar -jxpf ${BOOTFS} -C /tmp/media
+      else
+	  tar -zxpf ${BOOTFS} -C /tmp/media
+      fi
+  fi
   sync
   umount /tmp/media
   echo "****************************************"
   echo "Install root file system"
   mount ${DISK}2 /tmp/media
-  if `echo ${ROOTFS} | fgrep -q bz2`; then
-    tar -jxpf ${ROOTFS} -C /tmp/media
-  else
-    tar -zxpf ${ROOTFS} -C /tmp/media
+  if [ "${ROOTFS}" != "none" ]; then
+      if `echo ${ROOTFS} | fgrep -q bz2`; then
+	  tar -jxpf ${ROOTFS} -C /tmp/media
+      else
+	  tar -zxpf ${ROOTFS} -C /tmp/media
+      fi
   fi
   if [ "${KERNEL}" != "none" ]; then
     mkdir -p /tmp/media/boot

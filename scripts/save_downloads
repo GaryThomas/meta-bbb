@@ -1,11 +1,19 @@
 #! /bin/bash
 
-# Upload tarballs, etc, from a Poky/Yocto build tree to the common source tree
-YOCTO="$(dirname $0)/../.."
-if [ ! -d downloads ]; then
-  echo "*** This script must be run in a Poky/Yocto build tree"
-  exit 1
-fi
+MIRROR=/work/misc/Poky/sources
+
 cd downloads
-find . -maxdepth 1 -type f | grep -v '.lock$' | grep -v '.done$' >/tmp/files.$$
-rsync -auv --files-from=/tmp/files.$$ . $(readlink ${YOCTO}/sources)
+find . -maxdepth 1 -type f | sed -e 's;^\./;;' | grep -v '.lock$' | grep -v '.done$' >/tmp/files.$$
+LEN=`ls -l /tmp/files.$$ | awk '{print $5}'`
+if [ "${LEN}" == "0" ]; then
+    exit 0
+fi
+rsync -auv --files-from=/tmp/files.$$ . ${MIRROR}
+if [ $? == 0 ]; then
+    read -p "Upload successful - purge files(y/n)? " PURGE
+    if [ "${PURGE}" == "y" ]; then
+	xargs -n1 -t rm </tmp/files.$$
+	xargs -n1 -t -I\{} ln -s ${MIRROR}/\{} . </tmp/files.$$
+    fi
+fi
+
